@@ -301,6 +301,11 @@ tools/tv.py 'dumpsys accessibility'
 | Home button | `com.gathin.tvhome/.HomeKeyService` | `KEYCODE_ALL_APPS` (not an ordinary `KEYCODE_HOME`) |
 | Input button | `com.gathin.tvhome/.InputKeyService` | `KEYCODE_TV`, `KEYCODE_TV_INPUT`, plus the keycodes in `input_key_keycodes` and `app_keys` (`config.xml` or a theme) |
 
+A force stop of the launcher (Settings > Apps, a cleaner app, `am force-stop`) takes both helpers off
+that list. When the installer enabled a helper it also granted `WRITE_SECURE_SETTINGS`, and Home puts
+the helpers that were running back on the list the next time it starts; a helper turned off in
+Settings stays off.
+
 - **Enabled** means the component is in that user's colon-separated list (the class may be written in
   full, `com.gathin.tvhome/com.gathin.tvhome.HomeKeyService`). Match the whole component.
 - **Bound** means it appears under that user's `Bound services` section of the dump (`services` on older

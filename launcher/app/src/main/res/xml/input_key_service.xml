@@ -4,6 +4,8 @@
      flagRequestFilterKeyEvents and canRequestFilterKeyEvents, not on the event types. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:accessibilityFlags="flagRequestFilterKeyEvents|flagReportViewIds"
+    android:canRetrieveWindowContent="true"
+    android:canTakeScreenshot="true"
     android:canRequestFilterKeyEvents="true"
     android:description="@string/input_key_service_description" />

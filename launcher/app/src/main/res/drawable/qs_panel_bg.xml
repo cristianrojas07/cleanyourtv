@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick settings side panel: dark glass, rounded on the side that faces the screen. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#EB14161B" />
+    <corners android:topLeftRadius="28dp" android:bottomLeftRadius="28dp" />
+</shape>

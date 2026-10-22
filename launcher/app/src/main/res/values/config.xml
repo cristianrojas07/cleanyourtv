@@ -77,6 +77,13 @@
          Both keys can also be set from a theme's config.json ("settings_key_keycodes": [83]). -->
     <bool name="settings_key_panel">false</bool>
 
+    <!-- TCL Google TV: true, the TV itself answers the remote's buttons (app_keys, close_apps_keycodes,
+         input_key_keycodes and the Settings button) from its CustomKeyList and CustomKey_<keycode> system settings,
+         which examples/tcl-dormitorio/instalar-launcher.ps1 writes, and InputKeyService stops filtering keys. While any
+         accessibility service filters keys, Android hands the volume keys to the TV before any app, and a held
+         volume key moves one step only. Also "tcl_remote_keys": true in a theme's config.json. -->
+    <bool name="tcl_remote_keys">false</bool>
+
     <!-- More remote buttons that open the input switcher, by Android keycode (INPUT_KEY_SERVICE=1
          build-and-install.sh; KEYCODE_TV always does). For buttons only a disabled app answered: the Xiaomi
          MiTV-AXFR2 remote's PatchWall button is 192 (KEYCODE_BUTTON_5). `dumpsys window policy` lists which
@@ -111,6 +118,10 @@
          shelf above it. false makes the dock apps simply the first tiles of one plain grid (still in dock_apps
          order, no empty slots), with names under every tile and the glow behind every focused tile. -->
     <bool name="dock_row">true</bool>
+    <!-- The dock band as light frosted glass, like the Inputs, Wi-Fi and Settings pills, so a sky or wallpaper shows
+         through it. false (the default) keeps the solid near-black band, or the cinematic shelf's dark glass. Can
+         also be set with "dock_glass": true in a theme's config.json. -->
+    <bool name="dock_glass">false</bool>
     <!-- A reorder button (two arrows) in the top bar. Off by default: reordering is also in the Settings
          button's long-press menu, so it needs no extra button on screen. -->
     <bool name="reorder_button">false</bool>
@@ -153,6 +164,20 @@
          Off by default because the chooser is also available from launcher settings. -->
     <bool name="show_home_settings_shortcut">false</bool>
 
+    <!-- Moon button next to Settings that starts the TV's chosen screensaver (Google Photos ambient mode, Clock...).
+         Apps cannot start it directly on Google TV, so it starts about 10 s after the press, when Android's
+         shortest idle timeout runs out; any key before then cancels. Needs WRITE_SETTINGS, which
+         build-and-install.sh grants. Also "screensaver_button" in a theme's config.json. -->
+    <!-- Weather card under the clock: today and the next two days for one place, from Open-Meteo (free, no key),
+         fetched at most once an hour while Home is open. The only feature that uses the internet; leave the
+         place empty to keep the launcher offline. Latitude and longitude in decimal degrees, e.g. Sofia:
+         42.6977 and 23.3219. Also "weather_place", "weather_latitude", "weather_longitude" in a theme. -->
+    <string name="weather_place" translatable="false"></string>
+    <string name="weather_latitude" translatable="false"></string>
+    <string name="weather_longitude" translatable="false"></string>
+
+    <bool name="screensaver_button">false</bool>
+
     <!-- Installed launchable apps, including ordinary Android apps. Also settable in config.json. -->
     <bool name="app_library">false</bool>
 
@@ -191,9 +216,17 @@
          only background_color or the wallpaper behind everything. Can also be set with "ambient_glow": false in a
          theme's config.json. -->
     <bool name="ambient_glow">true</bool>
+    <!-- The focus highlight glows in the focused app's colour on every tile, as the cinematic shelf does for the
+         dock, without cinematic_home. Can also be set with "app_glow": true in a theme's config.json. -->
+    <bool name="app_glow">false</bool>
     <!-- Minutes Home may sit untouched before it shows the clock screensaver (ClockActivity); 0 turns it off.
          Unlike the system screensaver this never starts over live TV or an app, which matters on TVs whose
          Live TV window does not keep the screen on (CVTE): there the system screensaver would start in the
          middle of a programme. Can also be set with "home_idle_clock_minutes": 10 in a theme's config.json. -->
     <integer name="home_idle_clock_minutes">0</integer>
+    <!-- Remote buttons that force-stop the apps used in the last hours, through Settings > Apps > Force stop
+         (INPUT_KEY_SERVICE=1; needs `appops set com.gathin.tvhome GET_USAGE_STATS allow`). The TCL G09 remote's
+         shield (TCL Guard) button is 4140. Leave empty to omit. -->
+    <integer-array name="close_apps_keycodes">
+    </integer-array>
 </resources>

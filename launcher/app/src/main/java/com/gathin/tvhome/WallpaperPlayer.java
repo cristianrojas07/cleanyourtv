@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -32,6 +36,11 @@ final class WallpaperPlayer {
     /** config wallpaper_true_color: ARGB_8888 instead of RGB_565. */
     private final Bitmap.Config bitmapConfig;
     private final int height;
+    /** wallpaper_dim as an ARGB black, painted into each picture once instead of a full-screen shade view. */
+    private final int dimColor;
+    /** The picture on screen, released once the next one has been drawn. */
+    private Bitmap current;
+    private static final int FADE_MS = 2000;
     private boolean active;
     private boolean closed;
     private boolean loading;
@@ -42,6 +51,8 @@ final class WallpaperPlayer {
         files = new ArrayList<>(config.wallpapers);
         interval = config.wallpaperRotationMinutes * 60_000L;
         bitmapConfig = config.wallpaperTrueColor ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+        // The dim is painted into the picture (decode), so no full-screen shade layer is drawn on every frame.
+        dimColor = config.wallpaperDim > 0 ? (config.wallpaperDim * 255 / 100) << 24 : 0;
         order = config.wallpaperOrder;
         preferences = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);
         // Playback state belongs to one collection. Changing the collection starts from its first
@@ -60,14 +71,6 @@ final class WallpaperPlayer {
         if (config.wallpaperEnabled && !files.isEmpty()) {
             root.addView(image, 0, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            // No shade layer at all when the theme doesn't dim: a full-screen view is overdraw on 1 GB TVs.
-            if (config.wallpaperDim > 0) {
-                View shade = new View(context);
-                shade.setBackgroundColor((config.wallpaperDim * 255 / 100) << 24);
-                shade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-                root.addView(shade, 1, new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            }
             showFirst();
         }
     }
@@ -84,7 +87,9 @@ final class WallpaperPlayer {
         while (first != null) {
             Bitmap bitmap = decode(first);
             if (bitmap != null) {
-                image.setImageBitmap(bitmap);
+                show(bitmap);
+                // The picture covers the whole screen: the root's plain colour under it is overdraw.
+                root.setBackground(null);
                 displayed = first.getName();
                 if (!displayed.equals(previous)) {
                     preferences.edit().putString("image", displayed)
@@ -137,7 +142,7 @@ final class WallpaperPlayer {
                     update();
                     return;
                 }
-                image.setImageBitmap(bitmap);
+                show(bitmap);
                 displayed = next.getName();
                 if (!displayed.equals(previous) || changed == 0) {
                     preferences.edit().putString("image", displayed)
@@ -154,25 +159,61 @@ final class WallpaperPlayer {
         return key.toString();
     }
 
+    /** Puts a picture on screen, fading it in over the previous one, and releases the previous one afterwards. */
+    private void show(Bitmap bitmap) {
+        Bitmap old = current;
+        current = bitmap;
+        if (old == null || old == bitmap) {
+            image.setImageBitmap(bitmap);
+            return;
+        }
+        // A rotation fades the next picture in over the last instead of cutting to it.
+        TransitionDrawable fade = new TransitionDrawable(new Drawable[]{
+                new BitmapDrawable(image.getResources(), old), new BitmapDrawable(image.getResources(), bitmap)});
+        image.setImageDrawable(fade);
+        fade.startTransition(FADE_MS);
+        image.postDelayed(() -> {
+            if (current == bitmap) image.setImageBitmap(bitmap);
+            old.recycle();
+        }, FADE_MS + 500);
+    }
+
     private Bitmap decode(File file) {
+        return decode(file, width, height, bitmapConfig, dimColor);
+    }
+
+    /**
+     * A picture sized to cover the screen, with dimColor (ARGB black, 0 for none) painted in, in GPU memory.
+     * Null when it can't be read or is too large.
+     */
+    static Bitmap decode(File file, int screenWidth, int screenHeight, Bitmap.Config bitmapConfig, int dimColor) {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeFile(file.getPath(), options);
             int width = options.outWidth, height = options.outHeight;
             if (width <= 0 || height <= 0) return null;
-            int sample = WallpaperSize.sampleSize(width, height, this.width, this.height);
+            int sample = WallpaperSize.sampleSize(width, height, screenWidth, screenHeight);
             if (!WallpaperSize.accepted(width / sample, height / sample)) return null;
             options.inJustDecodeBounds = false;
             options.inSampleSize = sample;
-            int[] scale = WallpaperSize.coverScale(width / sample, height / sample, this.width, this.height);
+            int[] scale = WallpaperSize.coverScale(width / sample, height / sample, screenWidth, screenHeight);
             if (scale != null) {
                 options.inScaled = true;
                 options.inDensity = scale[0];
                 options.inTargetDensity = scale[1];
             }
             options.inPreferredConfig = bitmapConfig;
-            return BitmapFactory.decodeFile(file.getPath(), options);
+            options.inMutable = dimColor != 0;
+            Bitmap decoded = BitmapFactory.decodeFile(file.getPath(), options);
+            if (decoded == null) return null;
+            if (dimColor != 0) new Canvas(decoded).drawColor(dimColor);
+            // One copy in GPU memory instead of a software bitmap plus its texture; the decode stays off the UI
+            // thread for rotations, and Home's return no longer uploads 4-8 MB to the GPU.
+            Bitmap gpu = decoded.copy(Bitmap.Config.HARDWARE, false);
+            if (gpu == null) return decoded;
+            decoded.recycle();
+            return gpu;
         } catch (Exception | OutOfMemoryError failure) {
             return null;
         }

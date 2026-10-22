@@ -38,6 +38,15 @@ final class Config {
     static final String WALLPAPER_NAME = "wallpaper.jpg";
     static final String SETTINGS_NAME = "launcher_settings";
     static final String ROWS_BELOW_DOCK_KEY = "rows_below_dock";
+    /** On-TV weather choices (Launcher settings). Kept by "Follow theme" and theme pushes: they are not looks. */
+    static final String WEATHER_ON_KEY = "weather_on";
+    static final String WEATHER_PLACE_KEY = "weather_place";
+    static final String WEATHER_LABEL_KEY = "weather_place_label";
+    static final String WEATHER_LAT_KEY = "weather_latitude";
+    static final String WEATHER_LON_KEY = "weather_longitude";
+    /** The card's look (solid, translucent, glass), size (compact or not) and number of days (1-4), from the TV. */
+    static final String WEATHER_STYLE_KEY = "weather_style", WEATHER_COMPACT_KEY = "weather_compact",
+            WEATHER_DAYS_KEY = "weather_days";
     static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
@@ -87,6 +96,18 @@ final class Config {
     final boolean wallpaperTrueColor;
     final String vpnApp;
     final boolean showHomeSettingsShortcut;
+    /** Moon button that starts the screensaver (config.xml, screensaver_button). */
+    final boolean screensaverButton;
+    /** Weather card (config.xml, weather_place/latitude/longitude); empty place or bad numbers: no card. */
+    final String weatherPlace;
+    final double weatherLatitude, weatherLongitude;
+    /** The card is on: chosen in Launcher settings, or by default whenever a place is configured. */
+    final boolean weatherOn;
+    final String weatherStyle;
+    final boolean weatherCompact;
+    final int weatherDays;
+    /** "Sofia, Sofia-Capital, Bulgaria" when chosen on the TV, else the configured place name. */
+    final String weatherLabel;
     /** One line under the clock: CPU, free memory, free storage. Off unless config or a theme turns it on. */
     final boolean showStats;
     /** App library pill after the last Home row (config.xml app_library). */
@@ -99,10 +120,14 @@ final class Config {
     final int[] settingsKeycodes;
     /** Extra keycodes that open the input switcher in InputKeyService (config.xml input_key_keycodes). */
     final int[] inputKeycodes;
+    /** Remote buttons that force-stop the recently used apps in InputKeyService (config.xml close_apps_keycodes). */
+    final int[] closeAppsKeycodes;
     /** Remote buttons that open an app, "keycode:package" or "KEYCODE_NAME:package" (config.xml app_keys). */
     final List<String> appKeys;
     /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
     final boolean settingsKeyPanel;
+    /** TCL Google TV: the TV answers the remote's buttons through RemoteKeyActivity (tcl_remote_keys). */
+    final boolean tclRemoteKeys;
     /** Whether themes may show a wallpaper (config.json, wallpaper). */
     final boolean wallpaperEnabled;
     /** Full-screen picture behind the launcher, or null for the plain colour. */
@@ -111,6 +136,12 @@ final class Config {
     final List<File> wallpapers;
     final int wallpaperRotationMinutes;
     final int wallpaperDim;
+    /** The clock screensaver shows the wallpapers, one at a time, under the clock (config.json dream_wallpapers). */
+    final boolean dreamWallpapers;
+    /** Seconds each picture stays in the clock screensaver (config.json dream_wallpaper_seconds, 5-3600). */
+    final int dreamWallpaperSeconds;
+    /** The dock band's opacity in percent (config.json dock_opacity, 30-100): below 100 the wallpaper shows through. */
+    final int dockOpacity;
     /**
      * Playback order for a wallpaper collection: {@code sequential} or {@code shuffle}. Missing or
      * invalid values keep the historical shuffle so existing themes rotate exactly as before.
@@ -126,20 +157,29 @@ final class Config {
     final boolean cinematicHome;
     /** The glow in the focused app's colour behind the dock (config.xml, ambient_glow); false keeps the background plain. */
     final boolean ambientGlow;
+    /** The focus highlight in the focused app's colour on every tile (config.xml, app_glow), as cinematic_home does for the dock. */
+    final boolean appGlow;
     /** Minutes Home may sit untouched before the clock screensaver (config.xml, home_idle_clock_minutes); 0 is off. */
     final int homeIdleClockMinutes;
+    /** The dock band as light frosted glass like the pills (config.xml, dock_glass); false keeps the solid band. */
+    final boolean dockGlass;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, Map<String, String> launchActions, Map<String, String> appLabels,
                    Map<String, String> appBanners, String sourcePanelService, String sourcePanelAction, String inputAction,
                    int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
                    boolean shamsiDate, String greetingName, boolean moduleCards, boolean reducedMotion, boolean dockTitle, boolean dockRow, boolean reorderButton, boolean showNetworkPill, boolean iconOnlyButtons, boolean libraryButton, int wifiLabelWidth, boolean alwaysShowNames, boolean wallpaperTrueColor, String vpnApp,
-                   boolean showHomeSettingsShortcut, boolean showStats, boolean appLibrary, int backgroundColor, int skyIntensity,
-                   int[] settingsKeycodes, boolean settingsKeyPanel, boolean wallpaperEnabled, File wallpaper, List<File> wallpapers,
-                   int wallpaperRotationMinutes, int wallpaperDim, String wallpaperOrder, boolean overlayApplied,
-                   Festival festival, int[] inputKeycodes, List<String> appKeys,
-                   List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, int homeIdleClockMinutes) {
+                   boolean showHomeSettingsShortcut, boolean screensaverButton,
+                   String weatherPlace, double weatherLatitude, double weatherLongitude,
+                   boolean weatherOn, String weatherStyle, boolean weatherCompact, int weatherDays, String weatherLabel, boolean showStats, boolean appLibrary, int backgroundColor, int skyIntensity,
+                   int[] settingsKeycodes, boolean settingsKeyPanel, boolean tclRemoteKeys, boolean wallpaperEnabled, File wallpaper, List<File> wallpapers,
+                   int wallpaperRotationMinutes, int wallpaperDim, boolean dreamWallpapers, int dreamWallpaperSeconds,
+                   int dockOpacity, String wallpaperOrder, boolean overlayApplied,
+                   Festival festival, int[] inputKeycodes, int[] closeAppsKeycodes, List<String> appKeys,
+                   List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, int homeIdleClockMinutes,
+                   boolean dockGlass) {
         this.inputKeycodes = inputKeycodes;
+        this.closeAppsKeycodes = closeAppsKeycodes;
         this.appKeys = Collections.unmodifiableList(appKeys);
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
@@ -171,24 +211,39 @@ final class Config {
         this.wallpaperTrueColor = wallpaperTrueColor;
         this.vpnApp = vpnApp;
         this.showHomeSettingsShortcut = showHomeSettingsShortcut;
+        this.screensaverButton = screensaverButton;
+        this.weatherPlace = weatherPlace;
+        this.weatherLatitude = weatherLatitude;
+        this.weatherLongitude = weatherLongitude;
+        this.weatherOn = weatherOn;
+        this.weatherStyle = weatherStyle;
+        this.weatherCompact = weatherCompact;
+        this.weatherDays = weatherDays;
+        this.weatherLabel = weatherLabel;
         this.showStats = showStats;
         this.appLibrary = appLibrary;
         this.backgroundColor = backgroundColor;
         this.skyIntensity = skyIntensity;
         this.settingsKeycodes = settingsKeycodes;
         this.settingsKeyPanel = settingsKeyPanel;
+        this.tclRemoteKeys = tclRemoteKeys;
         this.wallpaperEnabled = wallpaperEnabled;
         this.wallpaper = wallpaper;
         this.wallpapers = Collections.unmodifiableList(wallpapers);
         this.wallpaperRotationMinutes = wallpaperRotationMinutes;
         this.wallpaperDim = wallpaperDim;
+        this.dreamWallpapers = dreamWallpapers;
+        this.dreamWallpaperSeconds = dreamWallpaperSeconds;
+        this.dockOpacity = dockOpacity;
         this.wallpaperOrder = wallpaperOrder;
         this.overlayApplied = overlayApplied;
         this.festival = festival;
         this.raceCalendar = Collections.unmodifiableList(raceCalendar);
         this.cinematicHome = cinematicHome;
         this.ambientGlow = ambientGlow;
+        this.appGlow = appGlow;
         this.homeIdleClockMinutes = homeIdleClockMinutes;
+        this.dockGlass = dockGlass;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -228,17 +283,25 @@ final class Config {
         boolean wallpaperTrueColor = res.getBoolean(R.bool.wallpaper_true_color);
         String vpn = res.getString(R.string.vpn_app).trim();
         boolean homeSettings = res.getBoolean(R.bool.show_home_settings_shortcut);
+        boolean screensaverButton = res.getBoolean(R.bool.screensaver_button);
+        String weatherPlace = res.getString(R.string.weather_place).trim();
+        String weatherLat = res.getString(R.string.weather_latitude).trim();
+        String weatherLon = res.getString(R.string.weather_longitude).trim();
         boolean showStats = res.getBoolean(R.bool.show_stats);
         boolean library = res.getBoolean(R.bool.app_library);
         int background = 0xFF000000;
         int skyIntensity = res.getInteger(R.integer.sky_intensity);
         int[] settingsKeycodes = res.getIntArray(R.array.settings_key_keycodes);
         boolean settingsKeyPanel = res.getBoolean(R.bool.settings_key_panel);
+        boolean tclRemoteKeys = res.getBoolean(R.bool.tcl_remote_keys);
         int[] inputKeycodes = res.getIntArray(R.array.input_key_keycodes);
+        int[] closeAppsKeycodes = res.getIntArray(R.array.close_apps_keycodes);
         List<String> appKeys = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.app_keys)));
         boolean cinematic = res.getBoolean(R.bool.cinematic_home);
         boolean ambientGlow = res.getBoolean(R.bool.ambient_glow);
+        boolean appGlow = res.getBoolean(R.bool.app_glow);
         int idleClockMinutes = res.getInteger(R.integer.home_idle_clock_minutes);
+        boolean dockGlass = res.getBoolean(R.bool.dock_glass);
         boolean applied = false;
 
         File dir = dir(ctx);
@@ -277,17 +340,25 @@ final class Config {
             wallpaperTrueColor = bool(json, "wallpaper_true_color", wallpaperTrueColor);
             vpn = string(json, "vpn_app", vpn);
             homeSettings = bool(json, "show_home_settings_shortcut", homeSettings);
+            screensaverButton = bool(json, "screensaver_button", screensaverButton);
+            weatherPlace = string(json, "weather_place", weatherPlace);
+            weatherLat = string(json, "weather_latitude", weatherLat);
+            weatherLon = string(json, "weather_longitude", weatherLon);
             showStats = bool(json, "show_stats", showStats);
             library = bool(json, "app_library", library);
             background = color(json, "background_color", background);
             skyIntensity = integer(json, "sky_intensity", skyIntensity, 0, 100);
             settingsKeycodes = intArray(json, "settings_key_keycodes", settingsKeycodes);
             settingsKeyPanel = bool(json, "settings_key_panel", settingsKeyPanel);
+            tclRemoteKeys = bool(json, "tcl_remote_keys", tclRemoteKeys);
             inputKeycodes = intArray(json, "input_key_keycodes", inputKeycodes);
+            closeAppsKeycodes = intArray(json, "close_apps_keycodes", closeAppsKeycodes);
             appKeys = stringList(json, "app_keys", appKeys);
             cinematic = bool(json, "cinematic_home", cinematic);
             ambientGlow = bool(json, "ambient_glow", ambientGlow);
+            appGlow = bool(json, "app_glow", appGlow);
             idleClockMinutes = integer(json, "home_idle_clock_minutes", idleClockMinutes, 0, 1440);
+            dockGlass = bool(json, "dock_glass", dockGlass);
         }
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
@@ -300,6 +371,17 @@ final class Config {
         if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
         animations = choices.getBoolean("animations", animations);
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        String weatherLabel = weatherPlace;
+        if (choices.contains(WEATHER_PLACE_KEY)) {
+            weatherPlace = choices.getString(WEATHER_PLACE_KEY, weatherPlace);
+            weatherLabel = choices.getString(WEATHER_LABEL_KEY, weatherPlace);
+            weatherLat = choices.getString(WEATHER_LAT_KEY, weatherLat);
+            weatherLon = choices.getString(WEATHER_LON_KEY, weatherLon);
+        }
+        boolean weatherOn = choices.getBoolean(WEATHER_ON_KEY, !weatherPlace.isEmpty());
+        String weatherStyle = choices.getString(WEATHER_STYLE_KEY, DOCK_GLASS);
+        boolean weatherCompact = choices.getBoolean(WEATHER_COMPACT_KEY, true);
+        int weatherDays = Math.max(1, Math.min(4, choices.getInt(WEATHER_DAYS_KEY, 4)));
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
@@ -307,6 +389,18 @@ final class Config {
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
+        boolean dreamWallpapers = json != null && bool(json, "dream_wallpapers", false);
+        int dreamWallpaperSeconds = json == null ? 300 : integer(json, "dream_wallpaper_seconds", 300, 5, 3600);
+        int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
+        // The dock's look chosen on the TV (Launcher settings) wins over dock_opacity and dock_glass.
+        String dockStyle = choices.getString(DOCK_STYLE_KEY, null);
+        if (dockStyle != null) {
+            int chosen = dockStyleOpacity(dockStyle);
+            if (chosen > 0) {
+                dockOpacity = chosen;
+                dockGlass = DOCK_GLASS.equals(dockStyle);
+            }
+        }
         String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
                 : string(json, "wallpaper_order", WallpaperRotation.ORDER_SHUFFLE);
         // An unknown order must not silently change how an existing collection rotates.
@@ -343,11 +437,12 @@ final class Config {
                 packageMap(appBanners), panelService,
                 panelAction, inputAction,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
-                shamsi, greetingName, moduleCards, reducedMotion, dockTitle, dockRow, reorderButton, showNetworkPill, iconOnlyButtons, libraryButton, wifiLabelWidth, alwaysShowNames, wallpaperTrueColor, vpn, homeSettings, showStats, library, background,
-                Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaperEnabled, wallpaper,
-                wallpapers, rotationMinutes, wallpaperDim, wallpaperOrder, applied,
-                festival, inputKeycodes, appKeys, json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow,
-                Math.max(0, idleClockMinutes));
+                shamsi, greetingName, moduleCards, reducedMotion, dockTitle, dockRow, reorderButton, showNetworkPill, iconOnlyButtons, libraryButton, wifiLabelWidth, alwaysShowNames, wallpaperTrueColor, vpn, homeSettings, screensaverButton, weatherPlace, coordinate(weatherLat, 90), coordinate(weatherLon, 180),
+                weatherOn, weatherStyle, weatherCompact, weatherDays, weatherLabel, showStats, library, background,
+                Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, tclRemoteKeys, wallpaperEnabled, wallpaper,
+                wallpapers, rotationMinutes, wallpaperDim, dreamWallpapers, dreamWallpaperSeconds, dockOpacity, wallpaperOrder, applied,
+                festival, inputKeycodes, closeAppsKeycodes, appKeys, json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow, appGlow,
+                Math.max(0, idleClockMinutes), dockGlass);
     }
 
     /**
@@ -380,6 +475,24 @@ final class Config {
         return races;
     }
 
+    static final String DOCK_STYLE_KEY = "dock_style";
+    static final String DOCK_SOLID = "solid", DOCK_TRANSLUCENT = "translucent", DOCK_GLASS = "glass";
+    /** On-TV dock looks, in the order Launcher settings lists them. */
+    static final String[] DOCK_STYLES = {DOCK_SOLID, DOCK_TRANSLUCENT, DOCK_GLASS};
+
+    /** The band's opacity for an on-TV dock look; the glass draws its own light tint over a full band. 0: unknown. */
+    static int dockStyleOpacity(String style) {
+        switch (style) {
+            case DOCK_SOLID:
+            case DOCK_GLASS:
+                return 100;
+            case DOCK_TRANSLUCENT:
+                return 60;
+            default:
+                return 0;
+        }
+    }
+
     private static void syncThemeChoices(SharedPreferences choices, File dir, File config) {
         File revision = dir == null ? null : new File(dir, THEME_REVISION_NAME);
         String token = revisionToken(revision);
@@ -390,12 +503,23 @@ final class Config {
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
-                    .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY);
+                    .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
+                    .remove(DOCK_STYLE_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
-                    .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
+                    .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_STYLE_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
+        }
+    }
+
+    /** Decimal degrees within +-limit, or NaN (no weather card) when empty or not a number. */
+    static double coordinate(String value, double limit) {
+        try {
+            double d = Double.parseDouble(value.trim());
+            return Math.abs(d) <= limit ? d : Double.NaN;
+        } catch (NumberFormatException | NullPointerException e) {
+            return Double.NaN;
         }
     }
 

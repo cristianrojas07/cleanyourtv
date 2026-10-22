@@ -17,6 +17,19 @@
     <string name="ethernet">Ethernet</string>
     <string name="offline">Offline</string>
     <string name="not_available">Not available on this TV</string>
+    <string name="screensaver">Screensaver</string>
+    <string name="weather_today">Today</string>
+    <string name="weather_state">Weather: %1$s</string>
+    <string name="weather_place_state">Weather location: %1$s</string>
+    <string name="weather_place_none">choose a city</string>
+    <string name="weather_search_title">Weather location</string>
+    <string name="weather_search_hint">City, for example Sofia</string>
+    <string name="weather_search">Search</string>
+    <string name="weather_no_results">No places found for "%1$s"</string>
+    <string name="weather_offline">Could not reach the weather service</string>
+    <string name="weather_updated">Updated %1$s</string>
+    <string name="screensaver_soon">Screensaver in 10 seconds. Press any key to cancel.</string>
+    <string name="screensaver_no_permission">The launcher may not change the screen timeout. Run build-and-install again.</string>
     <string name="cant_open">Can\'t open %1$s</string>
     <string name="date_format">EEEE  d MMMM</string>
     <!-- Date next to the clock on Home; a locale can split it over two lines with \n. -->
@@ -37,6 +50,11 @@
     <string name="wallpaper_none">None</string>
     <string name="wallpaper_applied">Wallpaper changed</string>
     <string name="wallpaper_theme_default">Theme default</string>
+    <string name="dock_style_label">Dock</string>
+    <string name="dock_style_state">Dock: %1$s</string>
+    <string name="dock_solid">Solid</string>
+    <string name="dock_translucent">Translucent</string>
+    <string name="dock_glass_style">Glass</string>
     <string name="animations_state">Animations: %1$s</string>
     <string name="advanced_effects">Advanced effects</string>
     <string name="advanced_effects_state">Advanced effects: %1$s</string>
@@ -47,7 +65,7 @@
     <string name="quick_picture">Display</string>
     <string name="quick_network">Network</string>
     <string name="quick_apps">Apps</string>
-    <string name="quick_apps_hint">Re-enable</string>
+    <string name="quick_apps_hint">Enable or stop</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="enable">Enable</string>
@@ -107,4 +125,30 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <string name="stats_ram">RAM %1$s/%2$s</string>
+    <string name="close_apps_title">Freeing memory…</string>
+    <string name="close_apps_step">%1$s · %2$d of %3$d</string>
+    <string name="close_apps_done">%1$d apps closed · %2$d MB freed</string>
+    <string name="close_apps_stopped">Stopped after %1$d apps: the screen did not look as expected</string>
+    <string name="close_apps_none">No recent apps to close</string>
+    <string name="quick_title">Quick settings</string>
+    <string name="quick_sound">Sound</string>
+    <string name="quick_game_mode">Game mode</string>
+    <string name="quick_accessibility">Accessibility</string>
+    <string name="quick_free_memory">Free memory</string>
+    <string name="tile_force_stop">Force stop</string>
+    <string name="tile_uninstall">Uninstall</string>
+    <string name="screensaver_now">Screensaver</string>
+    <string name="weather_style_label">Weather look</string>
+    <string name="weather_style_state">Weather look: %1$s</string>
+    <string name="weather_size_label">Weather size</string>
+    <string name="weather_size_state">Weather size: %1$s</string>
+    <string name="weather_size_normal">Normal</string>
+    <string name="weather_size_compact">Compact</string>
+    <string name="weather_days_label">Weather days</string>
+    <string name="weather_days_state">Weather days: %1$s</string>
+    <string name="weather_days_1">Today only</string>
+    <string name="weather_days_2">2 days</string>
+    <string name="weather_days_3">3 days</string>
+    <string name="weather_days_4">4 days</string>
 </resources>

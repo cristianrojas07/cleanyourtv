@@ -31,6 +31,7 @@ public class HomeKeyService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        ServiceRepair.connected(this, getClass());
         settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
         // Keycodes and the panel choice can also come from a theme; theme.sh restarts this service.
         Config config = Config.load(this);
@@ -38,6 +39,22 @@ public class HomeKeyService extends AccessibilityService {
         settingsPanel = config.settingsKeyPanel;
         appKeys = RemoteKeys.parseAppKeys(config.appKeys);
         appScancodes = RemoteKeys.parseAppScancodes(config.appKeys);
+    }
+
+    /**
+     * app_keys belong to InputKeyService when it runs too: with both services on, each launched the app, so one
+     * press started it twice (an app that restarts its player on a new launch jumped back to live).
+     */
+    private boolean inputKeyServiceOn() {
+        String enabled = android.provider.Settings.Secure.getString(getContentResolver(),
+                android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        if (enabled == null) return false;
+        for (String component : enabled.split(":")) {
+            android.content.ComponentName c = android.content.ComponentName.unflattenFromString(component);
+            if (c != null && c.getPackageName().equals(getPackageName())
+                    && c.getClassName().equals(InputKeyService.class.getName())) return true;
+        }
+        return false;
     }
 
     private boolean isSettingsKey(KeyEvent event) {
@@ -51,7 +68,7 @@ public class HomeKeyService extends AccessibilityService {
     protected boolean onKeyEvent(KeyEvent event) {
         // A scancode entry is more specific than any keycode, so it goes first.
         String scanApp = appScancodes.get(event.getScanCode());
-        if (scanApp != null) {
+        if (scanApp != null && !inputKeyServiceOn()) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) RemoteKeys.launch(this, scanApp);
             return true;
         }
@@ -65,7 +82,7 @@ public class HomeKeyService extends AccessibilityService {
             return true;
         }
         String app = appKeys.get(event.getKeyCode());
-        if (app != null) {
+        if (app != null && !inputKeyServiceOn()) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) RemoteKeys.launch(this, app);
             return true;
         }
@@ -78,6 +95,13 @@ public class HomeKeyService extends AccessibilityService {
             startActivity(home);
         }
         return true;
+    }
+
+    /** Unbound by Android: the user turned the helper off, so Home doesn't put it back (ServiceRepair). */
+    @Override
+    public boolean onUnbind(Intent intent) {
+        ServiceRepair.disconnected(this, getClass());
+        return super.onUnbind(intent);
     }
 
     @Override

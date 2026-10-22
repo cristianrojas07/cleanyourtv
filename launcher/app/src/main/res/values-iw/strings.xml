@@ -17,6 +17,19 @@
     <string name="ethernet">רשת קווית</string>
     <string name="offline">אין חיבור לרשת</string>
     <string name="not_available">לא זמין בטלוויזיה זו</string>
+    <string name="screensaver">שומר מסך</string>
+    <string name="weather_today">היום</string>
+    <string name="weather_state">מזג אוויר: %1$s</string>
+    <string name="weather_place_state">מיקום מזג האוויר: %1$s</string>
+    <string name="weather_place_none">בחרו עיר</string>
+    <string name="weather_search_title">מיקום מזג האוויר</string>
+    <string name="weather_search_hint">עיר, למשל סופיה</string>
+    <string name="weather_search">חיפוש</string>
+    <string name="weather_no_results">לא נמצאו מקומות עבור "%1$s"</string>
+    <string name="weather_offline">אין חיבור לשירות מזג האוויר</string>
+    <string name="weather_updated">עודכן %1$s</string>
+    <string name="screensaver_soon">שומר המסך יופעל בעוד 10 שניות. לחצו על מקש כלשהו לביטול.</string>
+    <string name="screensaver_no_permission">למסך הבית אין הרשאה לשנות את זמן כיבוי המסך. הריצו שוב את build-and-install.</string>
     <string name="cant_open">לא ניתן לפתוח את %1$s</string>
     <string name="date_format">EEEE  d בMMMM</string>
     <string name="stats_cpu">CPU %1$d%%</string>
@@ -94,6 +107,11 @@
     <string name="wallpaper_none">ללא</string>
     <string name="wallpaper_applied">הטפט שונה</string>
     <string name="wallpaper_theme_default">ברירת המחדל של ערכת הנושא</string>
+    <string name="dock_style_label">מעגן</string>
+    <string name="dock_style_state">מעגן: %1$s</string>
+    <string name="dock_solid">אטום</string>
+    <string name="dock_translucent">שקוף למחצה</string>
+    <string name="dock_glass_style">זכוכית</string>
 
     <!-- Race-weekend panel (RaceWeekend). -->
     <string name="race_kicker">סבב %1$d · %2$s · %3$s</string>
@@ -103,4 +121,5 @@
     <string name="race_live">%1$s · בשידור חי</string>
     <string name="race_finished">הדגל המשובץ</string>
     <string name="last_opened">נפתח לאחרונה %1$s</string>
+    <string name="screensaver_now">שומר מסך</string>
 </resources>
